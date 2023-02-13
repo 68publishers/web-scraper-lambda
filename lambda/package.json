@@ -1,8 +1,13 @@
 {
     "name": "web-scraper-lambda",
+    "author": "68publishers",
     "description": "AWS lambda for web content scraping.",
     "version": "1.0.0",
     "private": true,
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/68publishers/web-scraper-lambda"
+    },
     "dependencies": {
         "jsdom": "^21.1.0",
         "open-graph-scraper": "^5.1.0"

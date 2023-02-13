@@ -1,8 +1,20 @@
 {
     "name": "web-scraper-client",
+    "author": "68publishers",
     "description": "Client for 68publishers/web-scraper-lambda.",
     "version": "1.0.0",
     "private": false,
+    "main": "./src/index.js",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/68publishers/web-scraper-lambda"
+    },
+    "keywords": [
+        "68publishers",
+        "web-scraper",
+        "scraper",
+        "lambda"
+    ],
     "devDependencies": {
         "@babel/core": "^7.20.12",
         "@babel/polyfill": "^7.12.1",
@@ -32,5 +44,9 @@
             "mjs",
             "js"
         ]
-    }
+    },
+    "files": [
+        "src",
+        "dist/web-scraper-client.min.js"
+    ]
 }
