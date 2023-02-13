@@ -1,0 +1,105 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Web scraper for parsing OG meta tags and custom attributes using xpath.
+
+Globals:
+  Function:
+    Tracing: Active
+  Api:
+    TracingEnabled: true
+    OpenApiVersion: 3.0.3
+
+Parameters:
+  Stage:
+    Type: String
+    Default: "prod"
+    Description: "The stage name like 'prod', 'dev', 'test' etc."
+  CacheClusterEnabled:
+    Type: String
+    AllowedValues:
+      - "true"
+      - "false"
+    Default: "false"
+    Description: "Specifies whether a cache cluster is enabled for the stage."
+  CacheClusterSize:
+    Type: String
+    AllowedValues:
+      - "0.5"
+      - "1.6"
+      - "118"
+      - "13.5"
+      - "237"
+      - "28.4"
+      - "58.2"
+      - "6.1"
+    Description: "The stage's cache capacity in GB."
+    Default: "0.5"
+  CacheTtlInSeconds:
+    Type: Number
+    MinValue: 0
+    Description: "Specifies the time to live (TTL), in seconds, for cached responses."
+    Default: 0
+
+Conditions:
+  IsCacheClusterEnabled: !Equals [!Ref CacheClusterEnabled, "true"]
+
+Resources:
+  WebScraperApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: !Sub "${AWS::StackName}-Api"
+      StageName: !Ref Stage
+      CacheClusterEnabled: !If [IsCacheClusterEnabled, true, false]
+      CacheClusterSize: !Ref CacheClusterSize
+      MethodSettings:
+        - ResourcePath: /~1scrap
+          HttpMethod: GET
+          CachingEnabled: !If [IsCacheClusterEnabled, true, false]
+          CacheTtlInSeconds: !Ref CacheTtlInSeconds
+
+  WebScraperLambdaHandler:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-WebScraperLambdaHandler"
+      Handler: src/handler/web-scraper-handler.webScraperLambdaHandler
+      CodeUri: ./lambda
+      Runtime: nodejs18.x
+      Architectures:
+      - x86_64
+      MemorySize: 2048
+      Timeout: 10
+      Description: >
+        A Lambda function that returns OG meta tags and custom attributes from specified URL.
+      Policies:
+      - AWSLambdaBasicExecutionRole
+      Events:
+        WebScraperEvent:
+          Type: Api
+          Properties:
+            Path: /scrap
+            Method: GET
+            RequestParameters:
+              - method.request.querystring.url
+              - method.request.querystring.xpathQueries
+              - method.request.querystring.cssQueries
+            RestApiId: !Ref WebScraperApi
+
+  ApplicationResourceGroup:
+    Type: AWS::ResourceGroups::Group
+    Properties:
+      Name: !Sub "${AWS::StackName}-Resources"
+      ResourceQuery:
+        Type: CLOUDFORMATION_STACK_1_0
+
+  ApplicationInsightsMonitoring:
+    Type: AWS::ApplicationInsights::Application
+    Properties:
+      ResourceGroupName: !Sub "${AWS::StackName}-Resources"
+      AutoConfigurationEnabled: "true"
+    DependsOn: ApplicationResourceGroup
+
+Outputs:
+  WebScraperEndpoint:
+    Description: "API Gateway endpoint."
+    Value: !Sub "https://${WebScraperApi}.execute-api.${AWS::Region}.amazonaws.com/${Stage}/scrap"
