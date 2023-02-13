@@ -1,8 +1,8 @@
 {
-    "name": "web-scraper-client",
+    "name": "@68publishers/web-scraper-client",
     "author": "68publishers",
     "description": "Client for 68publishers/web-scraper-lambda.",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "private": false,
     "main": "./src/index.js",
     "repository": {

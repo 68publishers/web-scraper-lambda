@@ -36,6 +36,10 @@ module.exports = {
     output: {
         path: path.resolve(__dirname, 'dist'),
         filename: 'web-scraper-client.min.js',
-        library: 'WebScraperClient'
+        library: {
+            type: 'var',
+            name: 'WebScraperClient',
+            export: 'default',
+        },
     }
 };
