@@ -42,11 +42,22 @@ Or you can import the client into the browser from the CDN
 
 ## Client usage
 
-The client must be initialized with the URL of your lambda function.
+The client must be initialized with the URL of your lambda function and an optional configuration object.
 
 ```js
-var client = new WebScraperClient('https://<gateway>.execute-api.<region>.amazonaws.com/<stage>/scrap');
+var client = new WebScraperClient(
+    'https://<gateway>.execute-api.<region>.amazonaws.com/<stage>/scrap',
+    {} // optional configuration
+);
 ```
+
+Optional configuration values table:
+
+| Option path     | Type                | Default                | Description                                                                            |
+|-----------------|---------------------|------------------------|----------------------------------------------------------------------------------------|
+| `cache.storage` | `null` or `storage` | `null`                 | Pass `localStorage` or `sessionStorage` or any compatible storage for enabled caching. |
+| `cache.ttl`     | `int`               | `3600`                 | Cache expiration in seconds.                                                           |
+| `cache.prefix`  | `string`            | `"web-scraper-cache:"` | Prefix for cache item keys.                                                            |
 
 To scrap data from a web page, call the `scrap` method with the desired URL. You can also use the other two method arguments - `xpathQueries` and `cssQueries`
 The first one is an object containing arbitrary names as keys and valid xpaths as values. The second one takes css selectors as values.
@@ -78,7 +89,7 @@ client.scrap(
 });
 ```
 
-## Response object
+### Response object
 
 The response object contains all parsed meta tags and "queries". Results from `xpathQueries` and `cssQueries` are merged and all result values are an array by default.
 
@@ -91,4 +102,21 @@ client.scrap(/*...*/).then(response => {
     var galleryImages = response.queryValues('galleryImages', []) // return all gallery images
     var productName = response.queryValue('productName', 'Unknown product'); // the method `queryValue` returns the first value in an array
 });
+```
+
+### Response caching
+
+The cache must be enabled in the client configuration.
+
+```js
+var client = new WebScraperClient(
+    'https://<gateway>.execute-api.<region>.amazonaws.com/<stage>/scrap',
+    {
+        cache: {
+            storage: window.sessionStorage, // or window.localStorage
+            ttl: 3600, // expiration in seconds
+            prefix: 'web-scraper-cache:', // prefix for cache keys
+        },
+    }
+);
 ```

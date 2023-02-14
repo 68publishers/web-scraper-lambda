@@ -1,6 +1,7 @@
 import {Client} from '../../src/client.mjs';
 import {Response} from '../../src/response.mjs';
 import {jest} from '@jest/globals';
+import MemoryStorage from 'memorystorage';
 
 describe('Test Client object', function () {
     const endpoint = 'https://scraper-endpoint.io/test/scrap';
@@ -87,6 +88,44 @@ describe('Test Client object', function () {
         );
     });
 
+    it('Cached response should be returned', async () => {
+        const url = 'https://www.example.com';
+        const storage = new MemoryStorage('cached-response-test');
+        const client = new Client(endpoint, {
+            cache: {
+                storage: storage,
+                ttl: 1,
+            },
+        });
+
+        // setup fetch mock
+        setupSuccessfulMock(url, undefined, undefined, {ogTitle: 'Title'}, {});
+
+        // 1st call - boost the cache
+        await client.scrap(url, {}, {});
+
+        // the fetch api is called and the storage contains the response
+        expect(fetchMock).toHaveBeenCalledTimes(1);
+        expect(storage).toHaveLength(1)
+
+        // 2nd call - from the cache
+        await client.scrap(url, {}, {});
+
+        // the fetch api is not called and the storage contains the response
+        expect(storage).toHaveLength(1)
+        expect(fetchMock).toHaveBeenCalledTimes(1);
+
+        // wait more than 1 second (ttl)
+        await new Promise((resolve) => setTimeout(resolve, 1005));
+
+        // 3rd call - expire the cache and boost again
+        await client.scrap(url, {}, {});
+
+        // the fetch api is called and the storage contains the response
+        expect(storage).toHaveLength(1)
+        expect(fetchMock).toHaveBeenCalledTimes(2);
+    });
+
     it('Error should be thrown on non successful response', async () => {
         await testNonSuccessfulResponse(
             'https://www.example.com',
@@ -98,25 +137,7 @@ describe('Test Client object', function () {
     });
 
     const testSuccessfulResponse = async (url, xpathQueries, cssQueries, meta, queries) => {
-        fetchMock.mockImplementationOnce(request => {
-            assertUrl(request, url, xpathQueries, cssQueries);
-
-            return new Promise(resolve => {
-                resolve({
-                    json: () => {
-                        return {
-                            status: 'OK',
-                            error: false,
-                            result: {
-                                requestUrl: 'https://www.example.com',
-                                meta: meta || {},
-                                queries: queries || {},
-                            },
-                        };
-                    },
-                });
-            })
-        });
+        setupSuccessfulMock(url, xpathQueries, cssQueries, meta, queries);
 
         const client = new Client(endpoint);
         const response = await client.scrap(url, xpathQueries, cssQueries);
@@ -128,7 +149,7 @@ describe('Test Client object', function () {
     };
 
     const testNonSuccessfulResponse = async (url, xpathQueries, cssQueries, status, error) => {
-        fetchMock.mockImplementationOnce(request => {
+        fetchMock.mockImplementation(request => {
             assertUrl(request, url, xpathQueries, cssQueries);
 
             return new Promise(resolve => {
@@ -148,6 +169,28 @@ describe('Test Client object', function () {
 
         await expect(client.scrap(url, xpathQueries, cssQueries)).rejects.toThrow(new Error(`${status}: ${error}`));
         expect(fetchMock).toHaveBeenCalledTimes(1);
+    };
+
+    const setupSuccessfulMock = (url, xpathQueries, cssQueries, meta, queries) => {
+        fetchMock.mockImplementation(request => {
+            assertUrl(request, url, xpathQueries, cssQueries);
+
+            return new Promise(resolve => {
+                resolve({
+                    json: () => {
+                        return {
+                            status: 'OK',
+                            error: false,
+                            result: {
+                                requestUrl: 'https://www.example.com',
+                                meta: meta || {},
+                                queries: queries || {},
+                            },
+                        };
+                    },
+                });
+            })
+        });
     };
 
     const assertUrl = (requestedUrl, scrapedUrl, xpathQueries, cssQueries) => {
