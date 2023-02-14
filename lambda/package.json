@@ -4,6 +4,9 @@
     "description": "AWS lambda for web content scraping.",
     "version": "1.0.0",
     "private": true,
+    "engines" : {
+        "node" : ">=18.0.0"
+    },
     "repository": {
         "type": "git",
         "url": "git+https://github.com/68publishers/web-scraper-lambda"
