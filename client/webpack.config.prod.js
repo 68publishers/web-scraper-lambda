@@ -3,7 +3,7 @@ const TerserWebpackPlugin = require('terser-webpack-plugin');
 
 module.exports = {
     mode: 'production',
-    entry: './src/index.mjs',
+    entry: './index.mjs',
     module: {
         rules: [
             {
