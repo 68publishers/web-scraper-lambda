@@ -31,4 +31,12 @@ export class Response {
 
         return values[0] ?? defaultValue;
     }
+
+    queryError(name) {
+        if (!(name in this._queries)) {
+            return false;
+        }
+
+        return this._queries[name].error;
+    }
 }

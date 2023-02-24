@@ -101,6 +101,8 @@ client.scrap(/*...*/).then(response => {
     var pageLinks = response.queryValues('pageLinks', []) // return all found page links
     var galleryImages = response.queryValues('galleryImages', []) // return all gallery images
     var productName = response.queryValue('productName', 'Unknown product'); // the method `queryValue` returns the first value in an array
+    
+    var productNameError = response.queryError('productName'); // the method `queryError` returns an error message (for example if passed xpath is invalid) or false
 });
 ```
 

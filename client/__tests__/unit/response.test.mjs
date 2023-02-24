@@ -42,5 +42,10 @@ describe('Test Response object', function () {
         expect(response.queryValue('c', 'default')).toStrictEqual('default');
         expect(response.queryValue('d')).toBeNull()
         expect(response.queryValue('d', 'default')).toStrictEqual('default');
+
+        expect(response.queryError('a')).toBeFalsy();
+        expect(response.queryError('b')).toBeFalsy();
+        expect(response.queryError('c')).toStrictEqual('Test error.');
+        expect(response.queryError('d')).toBeFalsy();
     });
 });
