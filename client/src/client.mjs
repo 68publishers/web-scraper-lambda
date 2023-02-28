@@ -25,15 +25,11 @@ export class Client {
         }
     }
 
-    scrap(url, xpathQueries = {}, cssQueries = {}) {
+    scrap(url, queries = {}) {
         let query = `url=${encodeURIComponent(url)}`
 
-        if ('object' === typeof xpathQueries && 0 < Object.keys(xpathQueries).length) {
-            query += `&xpathQueries=${encodeURIComponent(JSON.stringify(xpathQueries))}`;
-        }
-
-        if ('object' === typeof cssQueries && 0 < Object.keys(cssQueries).length) {
-            query += `&cssQueries=${encodeURIComponent(JSON.stringify(cssQueries))}`;
+        if ('object' === typeof queries && 0 < Object.keys(queries).length) {
+            query += `&queries=${encodeURIComponent(JSON.stringify(queries))}`;
         }
 
         const endpoint = `${this._scraperEndpoint}?${query}`;

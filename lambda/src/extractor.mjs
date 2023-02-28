@@ -1,4 +1,4 @@
-import {JSDOM} from 'jsdom';
+import {parseHTML} from 'linkedom/cached';
 
 const fixIndentation = text => {
     return text.replace(RegExp('(^ +)|( +$)|(^$)', 'gm'), '').trim();
@@ -6,40 +6,30 @@ const fixIndentation = text => {
 
 export const Extractor = {
     createDom(html) {
-        return new JSDOM(html);
-    },
-    extractXpath(dom, xpath) {
-        try {
-            const values = [];
-            const doc = dom.window.document;
-            const result = doc.evaluate(xpath, doc, null, dom.window.XPathResult.UNORDERED_NODE_ITERATOR_TYPE, null);
-            let node = result.iterateNext();
-
-            while (node) {
-                values.push(fixIndentation(node.textContent));
-
-                node = result.iterateNext();
-            }
-
-            return {
-                values: values,
-                error: false,
-            };
-        } catch (e) {
-            return {
-                values: [],
-                error: e.toString(),
-            };
-        }
+        return parseHTML(html);
     },
     extractCssSelector(dom, cssSelector) {
         try {
+            const parts = cssSelector.split('@');
+            let attribute = parts.pop().trim();
+            let selector = parts.join('@').trim();
+
+            if ('' === selector) {
+                selector = attribute;
+                attribute = null;
+            }
+
             const values = [];
             const doc = dom.window.document;
-            const elements = doc.querySelectorAll(cssSelector);
+            const elements = doc.querySelectorAll(selector);
 
             for (let i = 0; i < elements.length; ++i) {
-                values.push(fixIndentation(elements[i].textContent));
+                if (attribute && !elements[i].hasAttribute(attribute)) {
+                    continue;
+                }
+
+                const value = attribute ? elements[i].getAttribute(attribute) : fixIndentation(elements[i].textContent);
+                values.push(value);
             }
 
             return {

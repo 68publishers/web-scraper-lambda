@@ -36,7 +36,7 @@ export const WebScraper = {
         }
 
         const {ogResult, response} = result;
-        const {xpathQueries, cssQueries} = options;
+        const {queries} = options;
         const requestUrl = ogResult.requestUrl;
 
         delete ogResult.requestUrl;
@@ -48,20 +48,10 @@ export const WebScraper = {
             queries: {},
         };
 
-        let dom = null;
+        if (('object' === typeof queries && 0 < Object.keys(queries).length)) {
+            const dom = Extractor.createDom(response.rawBody.toString());
 
-        if ('object' === typeof xpathQueries && 0 < Object.keys(xpathQueries).length) {
-            dom = dom ?? Extractor.createDom(response.rawBody);
-
-            for (let [key, value] of Object.entries(xpathQueries)) {
-                responseResult.queries[key] = Extractor.extractXpath(dom, value);
-            }
-        }
-
-        if (('object' === typeof cssQueries && 0 < Object.keys(cssQueries).length)) {
-            dom = dom ?? Extractor.createDom(response.rawBody);
-
-            for (let [key, value] of Object.entries(cssQueries)) {
+            for (let [key, value] of Object.entries(queries)) {
                 responseResult.queries[key] = Extractor.extractCssSelector(dom, value);
             }
         }

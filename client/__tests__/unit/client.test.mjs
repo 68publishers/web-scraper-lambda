@@ -17,7 +17,6 @@ describe('Test Client object', function () {
         await testSuccessfulResponse(
             'https://www.example.com',
             undefined,
-            undefined,
             {
                 ogTitle: 'Title',
             },
@@ -29,9 +28,8 @@ describe('Test Client object', function () {
         await testSuccessfulResponse(
             'https://www.example.com',
             {
-                test: '//a/@href',
+                test: 'a @href',
             },
-            undefined,
             {
                 ogTitle: 'Title',
             },
@@ -47,7 +45,6 @@ describe('Test Client object', function () {
     it('Response should be returned - url and css-path', async () => {
         await testSuccessfulResponse(
             'https://www.example.com',
-            undefined,
             {
                 test: '#main h2',
             },
@@ -67,9 +64,7 @@ describe('Test Client object', function () {
         await testSuccessfulResponse(
             'https://www.example.com',
             {
-                testA: '//a/@href',
-            },
-            {
+                testA: 'a @href',
                 testB: '#main h2',
             },
             {
@@ -99,7 +94,7 @@ describe('Test Client object', function () {
         });
 
         // setup fetch mock
-        setupSuccessfulMock(url, undefined, undefined, {ogTitle: 'Title'}, {});
+        setupSuccessfulMock(url, undefined, {ogTitle: 'Title'}, {});
 
         // 1st call - boost the cache
         await client.scrap(url, {}, {});
@@ -130,17 +125,16 @@ describe('Test Client object', function () {
         await testNonSuccessfulResponse(
             'https://www.example.com',
             undefined,
-            undefined,
             'ERR_TEST',
             'Test Error.',
         );
     });
 
-    const testSuccessfulResponse = async (url, xpathQueries, cssQueries, meta, queries) => {
-        setupSuccessfulMock(url, xpathQueries, cssQueries, meta, queries);
+    const testSuccessfulResponse = async (url, reqQueries, meta, queries) => {
+        setupSuccessfulMock(url, reqQueries, meta, queries);
 
         const client = new Client(endpoint);
-        const response = await client.scrap(url, xpathQueries, cssQueries);
+        const response = await client.scrap(url, reqQueries);
 
         expect(fetchMock).toHaveBeenCalledTimes(1);
         expect(response).toBeInstanceOf(Response);
@@ -148,9 +142,9 @@ describe('Test Client object', function () {
         expect(response._queries).toStrictEqual(queries);
     };
 
-    const testNonSuccessfulResponse = async (url, xpathQueries, cssQueries, status, error) => {
+    const testNonSuccessfulResponse = async (url, reqQueries, status, error) => {
         fetchMock.mockImplementation(request => {
-            assertUrl(request, url, xpathQueries, cssQueries);
+            assertUrl(request, url, reqQueries);
 
             return new Promise(resolve => {
                 resolve({
@@ -167,13 +161,13 @@ describe('Test Client object', function () {
 
         const client = new Client(endpoint);
 
-        await expect(client.scrap(url, xpathQueries, cssQueries)).rejects.toThrow(new Error(`${status}: ${error}`));
+        await expect(client.scrap(url, reqQueries)).rejects.toThrow(new Error(`${status}: ${error}`));
         expect(fetchMock).toHaveBeenCalledTimes(1);
     };
 
-    const setupSuccessfulMock = (url, xpathQueries, cssQueries, meta, queries) => {
+    const setupSuccessfulMock = (url, reqQueries, meta, queries) => {
         fetchMock.mockImplementation(request => {
-            assertUrl(request, url, xpathQueries, cssQueries);
+            assertUrl(request, url, reqQueries);
 
             return new Promise(resolve => {
                 resolve({
@@ -193,15 +187,11 @@ describe('Test Client object', function () {
         });
     };
 
-    const assertUrl = (requestedUrl, scrapedUrl, xpathQueries, cssQueries) => {
+    const assertUrl = (requestedUrl, scrapedUrl, reqQueries) => {
         let reqUrl = `url=${encodeURIComponent(scrapedUrl)}`
 
-        if (xpathQueries) {
-            reqUrl += `&xpathQueries=${encodeURIComponent(JSON.stringify(xpathQueries))}`;
-        }
-
-        if (cssQueries) {
-            reqUrl += `&cssQueries=${encodeURIComponent(JSON.stringify(cssQueries))}`;
+        if (reqQueries) {
+            reqUrl += `&queries=${encodeURIComponent(JSON.stringify(reqQueries))}`;
         }
 
         expect(requestedUrl).toStrictEqual(endpoint + '?' + reqUrl);

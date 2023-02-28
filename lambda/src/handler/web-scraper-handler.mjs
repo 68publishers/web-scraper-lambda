@@ -9,26 +9,22 @@ export const webScraperLambdaHandler = async (event) => {
         options.url = queryParameters.url;
     }
 
-    for (let key of ['xpathQueries', 'cssQueries']) {
-        if (!(key in queryParameters)) {
-            continue;
-        }
-
+    if ('queries' in queryParameters) {
         let valid = false;
 
         try {
-            const queries = JSON.parse(decodeURIComponent(queryParameters[key]));
+            const queries = JSON.parse(decodeURIComponent(queryParameters.queries));
 
             if ('object' === typeof queries) {
                 valid = true;
-                options[key] = queries;
+                options.queries = queries;
             }
         } catch (e) {
             // ignore an error
         }
 
         if (!valid) {
-            return ResponseFactory.createErrorResponse(422, 'ERR_INVALID_PARAMETER_VALUE', `The query parameter '${key}' contains malformed JSON.`);
+            return ResponseFactory.createErrorResponse(422, 'ERR_INVALID_PARAMETER_VALUE', 'The query parameter "queries" contains malformed JSON.');
         }
     }
 

@@ -7,6 +7,7 @@ describe('Test ResponseFactory object', function () {
         expect(response).toStrictEqual({
             statusCode: 500,
             headers: {
+                "Access-Control-Allow-Origin": "*",
                 'Content-Type': 'application/json',
             },
             body: '{"status":"ERR_INTERNAL_ERROR","error":"Internal error.","result":{}}',
@@ -20,6 +21,7 @@ describe('Test ResponseFactory object', function () {
         expect(response).toStrictEqual({
             statusCode: 200,
             headers: {
+                "Access-Control-Allow-Origin": "*",
                 'Content-Type': 'application/json',
             },
             body: '{"status":"ERR_NOT_FOUND","error":"Page not found.","result":{}}',
@@ -35,6 +37,7 @@ describe('Test ResponseFactory object', function () {
         expect(response).toStrictEqual({
             statusCode: 200,
             headers: {
+                "Access-Control-Allow-Origin": "*",
                 'Content-Type': 'application/json',
             },
             body: '{"status":"OK","error":false,"result":{"test":"test"}}',

@@ -1,6 +1,6 @@
 <h1 align="center">Web scraper lambda</h1>
 
-<p align="center">AWS SAM application and client for scraping website og meta tags and content via xpath or css selectors.</p>
+<p align="center">AWS SAM application and client for scraping website og meta tags and content via css selectors.</p>
 
 ## Prerequisites
 
@@ -59,8 +59,9 @@ Optional configuration values table:
 | `cache.ttl`     | `int`               | `3600`                 | Cache expiration in seconds.                                                           |
 | `cache.prefix`  | `string`            | `"web-scraper-cache:"` | Prefix for cache item keys.                                                            |
 
-To scrap data from a web page, call the `scrap` method with the desired URL. You can also use the other two method arguments - `xpathQueries` and `cssQueries`
-The first one is an object containing arbitrary names as keys and valid xpaths as values. The second one takes css selectors as values.
+To scrap data from a web page, call the `scrap` method with the desired URL. You can use the second optional `queries` argument to retrieve additional data.
+The value of the argument should be an object whose keys are arbitrary names and whose values are CSS selectors, such as `#main > .header > .title`.
+If you need an attribute value, add `@attributeName` to the end of the selector, for example `#gallery > img @src`.
 
 ```js
 // get only og meta tags
@@ -76,10 +77,8 @@ client.scrap('https://wwww.website-to-scrap.com/test')
 client.scrap(
     'https://wwww.website-to-scrap.com/test',
     {
-        pageLinks: "//a/@href",
-        galleryImages: "//*[@id='product_gallery']//img/@src",
-    },
-    {
+        pageLinks: "a @href",
+        galleryImages: "#product_gallery img @src",
         productName: "#main .product-card > .product-name",
     }
 ).then(response => {
@@ -91,7 +90,7 @@ client.scrap(
 
 ### Response object
 
-The response object contains all parsed meta tags and "queries". Results from `xpathQueries` and `cssQueries` are merged and all result values are an array by default.
+The response object contains all parsed meta tags and "queries".
 
 ```js
 client.scrap(/*...*/).then(response => {
@@ -102,7 +101,7 @@ client.scrap(/*...*/).then(response => {
     var galleryImages = response.queryValues('galleryImages', []) // return all gallery images
     var productName = response.queryValue('productName', 'Unknown product'); // the method `queryValue` returns the first value in an array
     
-    var productNameError = response.queryError('productName'); // the method `queryError` returns an error message (for example if passed xpath is invalid) or false
+    var productNameError = response.queryError('productName'); // the method `queryError` returns an error message (for example if passed css selector is invalid) or false
 });
 ```
 
