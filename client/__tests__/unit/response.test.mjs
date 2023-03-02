@@ -2,7 +2,7 @@ import {Response} from '../../src/response.mjs';
 
 describe('Test Response object', function () {
     it('Meta and queries should be returned', () => {
-        const response = new Response({
+        const response = new Response('https://www.example.com', {
             a: 1,
             b: 2,
         }, {
@@ -20,6 +20,7 @@ describe('Test Response object', function () {
             },
         });
 
+        expect(response.requestUrl).toStrictEqual('https://www.example.com');
         expect(response.meta()).toStrictEqual({a: 1, b: 2});
         expect(response.meta('a')).toStrictEqual(1);
         expect(response.meta('b')).toStrictEqual(2);

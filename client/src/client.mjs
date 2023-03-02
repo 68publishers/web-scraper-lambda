@@ -61,7 +61,7 @@ export class Client {
                     throw new Error(`${json.status || 'ERR'}: ${json.error || 'Error'}`);
                 }
 
-                const {meta, queries} = json.result;
+                const {requestUrl, meta, queries} = json.result;
 
                 if (cacheStorage) {
                     cacheStorage.setItem(cacheKey, JSON.stringify({
@@ -71,7 +71,7 @@ export class Client {
                     }));
                 }
 
-                return new Response(meta, queries);
+                return new Response(requestUrl, meta, queries);
             });
     }
 }

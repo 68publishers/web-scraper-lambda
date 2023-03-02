@@ -94,6 +94,7 @@ The response object contains all parsed meta tags and "queries".
 
 ```js
 client.scrap(/*...*/).then(response => {
+    var url = response.requestUrl; // url from which the data was scraped
     var allMeta = response.meta(); // returns all found og meta tags
     var ogTitle = response.meta('ogTitle', ''); // return the specific meta tag, the second argument is the default value
 

@@ -1,5 +1,6 @@
 export class Response {
-    constructor(meta, queries) {
+    constructor(requestUrl, meta, queries) {
+        this.requestUrl = requestUrl;
         this._meta = meta;
         this._queries = queries;
     }
