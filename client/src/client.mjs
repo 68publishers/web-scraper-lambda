@@ -45,10 +45,10 @@ export class Client {
             if (null !== cachedItem && (new Date()).getTime() > cachedItem.expiration) {
                 cacheStorage.removeItem(cacheKey);
             } else if (null !== cachedItem) {
-                const {meta, queries} = cachedItem;
+                const {requestUrl, meta, queries} = cachedItem;
 
                 return new Promise(resolve => {
-                    resolve(new Response(meta, queries));
+                    resolve(new Response(requestUrl, meta, queries));
                 })
             }
         }
@@ -65,6 +65,7 @@ export class Client {
 
                 if (cacheStorage) {
                     cacheStorage.setItem(cacheKey, JSON.stringify({
+                        requestUrl: requestUrl,
                         meta: meta,
                         queries: queries,
                         expiration: (new Date()).getTime() + (this._options.cache.ttl * 1000),
